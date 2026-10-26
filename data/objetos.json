@@ -18,5 +18,15 @@
         "nombre_contacto": "Pepito",
         "numero_contacto": "3010100000",
         "estado": "encontrado"
+    },
+    "3": {
+        "tipo": "Celular",
+        "color": "Azul",
+        "fecha": "2026-10-26",
+        "lugar": "San Marcos",
+        "descripcion": "Celular azul con un forro azul de un avioncito",
+        "nombre_contacto": "Niray",
+        "numero_contacto": "3000000000",
+        "estado": "perdido"
     }
 }

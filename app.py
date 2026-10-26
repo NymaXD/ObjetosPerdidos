@@ -1,13 +1,9 @@
 from flask import Flask, jsonify, request, render_template
-from flask_cors import CORS
 from service import *
 
 
 # --- Creacion de la App Flask ---
 app = Flask(__name__)
-
-# --- Activar CORS para permitir peticiones desde navegadores ---
-CORS(app)
 
 
 # --- Endpoints ---
@@ -106,7 +102,7 @@ def nuevo_objeto():
 
     try:
         nuevo_id = anadir_objeto(objeto)
-        
+
     except OSError:
         return jsonify({"message": "No se pudo guardar el objeto"}), 500
 
@@ -192,4 +188,4 @@ def marcar_como_recuperado(id_):
 
 # --- Ejecución de la App Flask ---
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host='0.0.0.0', port=5000,debug=True)
