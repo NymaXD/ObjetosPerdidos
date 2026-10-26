@@ -43,6 +43,13 @@ La carpeta `data/` debe existir; si no, el registro de objetos responde con erro
 
 ## Ejecución con Docker
 
+Primero debe clonar el repositorio:
+
+```bash
+git clone https://github.com/NymaXD/ObjetosPerdidos
+```
+
+
 Construir la imagen:
 
 ```bash
