@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block titulo %}Registrar objeto{% endblock %}
+
+{% block contenido %}
+<h1>Registrar un objeto</h1>
+<p class="intro">Todos los campos son obligatorios.</p>
+
+<!-- El formulario NO se envía de forma normal: el JavaScript de abajo
+     lo manda como JSON a la API (POST /items) -->
+<form id="formulario" class="formulario">
+
+    <label for="estado">¿Qué quieres reportar?</label>
+    <select id="estado" name="estado" required>
+        <option value="perdido">Perdí un objeto</option>
+        <option value="encontrado">Encontré un objeto</option>
+    </select>
+
+    <label for="tipo">Tipo de objeto</label>
+    <input type="text" id="tipo" name="tipo" placeholder="Ej: Billetera, Celular, Llaves" required>
+
+    <label for="color">Color</label>
+    <input type="text" id="color" name="color" placeholder="Ej: Negro" required>
+
+    <label for="fecha">Fecha</label>
+    <input type="date" id="fecha" name="fecha" required>
+
+    <label for="lugar">Lugar aproximado</label>
+    <input type="text" id="lugar" name="lugar" placeholder="Ej: Biblioteca, sede Chapinero" required>
+
+    <label for="descripcion">Descripción (máx. 200 caracteres)</label>
+    <textarea id="descripcion" name="descripcion" rows="3" maxlength="200" required></textarea>
+
+    <label for="nombre_contacto">Nombre de contacto</label>
+    <input type="text" id="nombre_contacto" name="nombre_contacto" required>
+
+    <label for="numero_contacto">Número de contacto (10 dígitos)</label>
+    <input type="text" id="numero_contacto" name="numero_contacto"
+           pattern="[0-9]{10}" maxlength="10" inputmode="numeric"
+           placeholder="3001234567" required>
+
+    <button type="submit">Guardar objeto</button>
+</form>
+
+<!-- Aquí se muestra el resultado (éxito o error) -->
+<p id="mensaje" class="mensaje" hidden></p>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Referencias a los elementos de la página
+    const formulario = document.getElementById("formulario");
+    const mensaje = document.getElementById("mensaje");
+
+    // Muestra un mensaje de éxito o de error al usuario
+    function mostrarMensaje(texto, esError) {
+        mensaje.textContent = texto;
+        mensaje.className = "mensaje " + (esError ? "error" : "exito");
+        mensaje.hidden = false;
+    }
+
+    // Se ejecuta cuando el usuario presiona "Guardar objeto"
+    formulario.addEventListener("submit", async function (evento) {
+        evento.preventDefault(); // evita que el navegador recargue la página
+
+        // Convierte los campos del formulario en un objeto JavaScript
+        const datos = Object.fromEntries(new FormData(formulario));
+
+        try {
+            // Envía los datos al backend (ruta POST /items)
+            const respuesta = await fetch("/items", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(datos)
+            });
+            const resultado = await respuesta.json();
+
+            if (respuesta.ok) {
+                mostrarMensaje("Objeto registrado con el ID " + resultado.id + ".", false);
+                formulario.reset(); // limpia el formulario
+            } else {
+                // El backend devuelve el motivo del error en "message"
+                mostrarMensaje(resultado.message, true);
+            }
+        } catch (error) {
+            mostrarMensaje("No se pudo conectar con el servidor.", true);
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<!-- Plantilla base: todas las páginas heredan de aquí (menú + pie de página) -->
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block titulo %}Buscar objetos{% endblock %} · Objetos perdidos</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='estilos.css') }}">
+</head>
+<body>
+    <!-- Menú de navegación común a todas las páginas -->
+    <header class="barra">
+        <a class="logo" href="{{ url_for('inicio') }}">Buscar objetos</a>
+        <nav>
+            <a href="{{ url_for('inicio') }}">Inicio</a>
+            <a href="{{ url_for('registrar') }}">Registrar objeto</a>
+            <a href="{{ url_for('listar') }}">Ver objetos</a>
+        </nav>
+    </header>
+
+    <main class="contenedor">
+        <!-- Cada página rellena este bloque con su contenido -->
+        {% block contenido %}{% endblock %}
+    </main>
+
+    <footer class="pie">Niray Muñoz y Juan Laguna</footer>
+
+    <!-- Bloque opcional para el JavaScript de cada página -->
+    {% block scripts %}{% endblock %}
+</body>
+</html>

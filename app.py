@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, render_template
 from flask_cors import CORS
 from service import *
 
@@ -12,6 +12,17 @@ CORS(app)
 
 # --- Endpoints ---
 # Cada función es una ruta con un método HTTP
+@app.route("/")
+def inicio():
+    return render_template("index.html")
+
+@app.route("/registrar")
+def registrar():
+    return render_template("registrar.html")
+
+@app.route("/listar")
+def listar():
+    return render_template("listar.html")
 
 # Método GET
 # Se encarga de buscar los objetos almacenados en el JSON según su estado

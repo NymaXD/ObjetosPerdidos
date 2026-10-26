@@ -1,0 +1,22 @@
+{
+    "1": {
+        "tipo": "Billetera",
+        "color": "rojo",
+        "fecha": "2026-10-26",
+        "lugar": "Universidad",
+        "descripcion": "Billetera con 200.000",
+        "nombre_contacto": "Juan",
+        "numero_contacto": "3000000000",
+        "estado": "perdido"
+    },
+    "2": {
+        "tipo": "Billetera",
+        "color": "rojo",
+        "fecha": "2026-10-26",
+        "lugar": "Universidad",
+        "descripcion": "una billetera con 200.000",
+        "nombre_contacto": "Pepito",
+        "numero_contacto": "3010100000",
+        "estado": "encontrado"
+    }
+}

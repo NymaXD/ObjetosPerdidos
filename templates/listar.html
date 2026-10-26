@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% block titulo %}Objetos{% endblock %}
+
+{% block contenido %}
+<h1>Objetos registrados</h1>
+<p id="aviso" class="mensaje error" hidden></p>
+
+<!-- Tres tablas, una por estado. Los colores de la fila ayudan a diferenciarlos -->
+<section>
+    <h2 class="titulo-perdido">Objetos perdidos</h2>
+    <div class="tabla-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th><th>Tipo</th><th>Color</th><th>Fecha</th><th>Lugar</th>
+                    <th>Descripción</th><th>Contacto</th><th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-perdido"></tbody>
+        </table>
+    </div>
+</section>
+
+<section>
+    <h2 class="titulo-encontrado">Objetos encontrados</h2>
+    <div class="tabla-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th><th>Tipo</th><th>Color</th><th>Fecha</th><th>Lugar</th>
+                    <th>Descripción</th><th>Contacto</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-encontrado"></tbody>
+        </table>
+    </div>
+</section>
+
+<section>
+    <h2 class="titulo-recuperado">Objetos recuperados</h2>
+    <div class="tabla-scroll">
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th><th>Tipo</th><th>Color</th><th>Fecha</th><th>Lugar</th>
+                    <th>Descripción</th><th>Contacto</th>
+                </tr>
+            </thead>
+            <tbody id="tabla-recuperado"></tbody>
+        </table>
+    </div>
+</section>
+
+<!-- Búsqueda de coincidencias (tipo + color) -->
+<section id="coincidencias">
+    <h2>Buscar coincidencias</h2>
+    <p class="intro">
+        Escribe un tipo y un color, o usa el botón "Ver coincidencias"
+        de un objeto perdido.
+    </p>
+    <form id="form-coincidencias" class="formulario en-linea">
+        <input type="text" id="buscar-tipo" placeholder="Tipo (ej: Billetera)" required>
+        <input type="text" id="buscar-color" placeholder="Color (ej: Negro)" required>
+        <button type="submit">Buscar</button>
+    </form>
+    <div id="resultado-coincidencias"></div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // ---------- Utilidades ----------
+
+    // Crea un elemento HTML con texto. Se usa textContent (no innerHTML)
+    // para que lo que escriba el usuario nunca se interprete como código.
+    function crearElemento(etiqueta, texto, clase) {
+        const elemento = document.createElement(etiqueta);
+        if (texto !== undefined) elemento.textContent = texto;
+        if (clase) elemento.className = clase;
+        return elemento;
+    }
+
+    // Muestra un aviso de error en la parte superior de la página
+    function mostrarAviso(texto) {
+        const aviso = document.getElementById("aviso");
+        aviso.textContent = texto;
+        aviso.hidden = false;
+    }
+
+    // ---------- Listado ----------
+
+    // Pide al backend los objetos de un estado (GET /items?estado=...)
+    // y los dibuja en la tabla correspondiente.
+    async function cargarTabla(estado) {
+        const cuerpo = document.getElementById("tabla-" + estado);
+        cuerpo.innerHTML = "";
+
+        const respuesta = await fetch("/items?estado=" + estado);
+        const objetos = await respuesta.json(); // {"1": {...}, "2": {...}}
+
+        const ids = Object.keys(objetos);
+
+        // Si no hay objetos, mostramos una fila informativa
+        if (ids.length === 0) {
+            const fila = crearElemento("tr");
+            const celda = crearElemento("td", "No hay objetos en este estado.", "vacio");
+            celda.colSpan = 8;
+            fila.appendChild(celda);
+            cuerpo.appendChild(fila);
+            return;
+        }
+
+        // Una fila por cada objeto
+        ids.forEach(function (id) {
+            const objeto = objetos[id];
+            const fila = crearElemento("tr", undefined, "fila-" + estado);
+
+            fila.appendChild(crearElemento("td", id));
+            fila.appendChild(crearElemento("td", objeto.tipo));
+            fila.appendChild(crearElemento("td", objeto.color));
+            fila.appendChild(crearElemento("td", objeto.fecha));
+            fila.appendChild(crearElemento("td", objeto.lugar));
+            fila.appendChild(crearElemento("td", objeto.descripcion));
+            fila.appendChild(crearElemento("td", objeto.nombre_contacto + " – " + objeto.numero_contacto));
+
+            // Solo los objetos perdidos tienen botones de acción
+            if (estado === "perdido") {
+                const celdaAcciones = crearElemento("td", undefined, "acciones");
+
+                const botonCoincidencias = crearElemento("button", "Ver coincidencias", "boton-chico");
+                botonCoincidencias.addEventListener("click", function () {
+                    buscarCoincidencias(objeto.tipo, objeto.color);
+                });
+
+                const botonRecuperado = crearElemento("button", "Marcar recuperado", "boton-chico boton-verde");
+                botonRecuperado.addEventListener("click", function () {
+                    marcarRecuperado(id);
+                });
+
+                celdaAcciones.appendChild(botonCoincidencias);
+                celdaAcciones.appendChild(botonRecuperado);
+                fila.appendChild(celdaAcciones);
+            }
+
+            cuerpo.appendChild(fila);
+        });
+    }
+
+    // Carga las tres tablas
+    async function cargarTodo() {
+        try {
+            await cargarTabla("perdido");
+            await cargarTabla("encontrado");
+            await cargarTabla("recuperado");
+        } catch (error) {
+            mostrarAviso("No se pudo conectar con el servidor.");
+        }
+    }
+
+    // ---------- Marcar como recuperado (PUT /items/<id>) ----------
+
+    async function marcarRecuperado(id) {
+        if (!confirm("¿Marcar el objeto " + id + " como recuperado?")) return;
+
+        const respuesta = await fetch("/items/" + id, { method: "PUT" });
+
+        if (respuesta.status === 204) {
+            cargarTodo(); // recarga las tablas: el objeto pasa a "recuperados"
+        } else {
+            const resultado = await respuesta.json();
+            mostrarAviso(resultado.message);
+        }
+    }
+
+    // ---------- Coincidencias (GET /items/matches?tipo=...&color=...) ----------
+
+    async function buscarCoincidencias(tipo, color) {
+        const contenedor = document.getElementById("resultado-coincidencias");
+        contenedor.innerHTML = "";
+
+        const url = "/items/matches?tipo=" + encodeURIComponent(tipo) +
+                    "&color=" + encodeURIComponent(color);
+        const respuesta = await fetch(url);
+        const resultado = await respuesta.json();
+
+        if (!respuesta.ok) {
+            contenedor.appendChild(crearElemento("p", resultado.message, "mensaje error"));
+            return;
+        }
+
+        if (resultado.total === 0) {
+            contenedor.appendChild(crearElemento("p",
+                "No hay coincidencias para " + tipo + " de color " + color + " todavía.",
+                "mensaje"));
+            return;
+        }
+
+        // Una tarjeta por cada pareja perdido ↔ encontrado
+        resultado.coincidencias.forEach(function (pareja) {
+            const tarjeta = crearElemento("div", undefined, "tarjeta-coincidencia");
+            tarjeta.appendChild(crearBloque("Perdido", pareja.perdido, "titulo-perdido"));
+            tarjeta.appendChild(crearBloque("Encontrado", pareja.encontrado, "titulo-encontrado"));
+            contenedor.appendChild(tarjeta);
+        });
+
+        // Lleva al usuario hasta los resultados
+        contenedor.scrollIntoView({ behavior: "smooth" });
+    }
+
+    // Dibuja el bloque de datos de un objeto dentro de una tarjeta
+    function crearBloque(titulo, objeto, claseTitulo) {
+        const bloque = crearElemento("div", undefined, "bloque");
+        bloque.appendChild(crearElemento("h3", titulo + " (ID " + objeto.id + ")", claseTitulo));
+        bloque.appendChild(crearElemento("p", objeto.tipo + " · " + objeto.color));
+        bloque.appendChild(crearElemento("p", objeto.lugar + " – " + objeto.fecha));
+        bloque.appendChild(crearElemento("p", objeto.descripcion));
+        bloque.appendChild(crearElemento("p", "Contacto: " + objeto.nombre_contacto + " – " + objeto.numero_contacto));
+        return bloque;
+    }
+
+    // Búsqueda manual desde el formulario
+    document.getElementById("form-coincidencias").addEventListener("submit", function (evento) {
+        evento.preventDefault();
+        buscarCoincidencias(
+            document.getElementById("buscar-tipo").value,
+            document.getElementById("buscar-color").value
+        );
+    });
+
+    // Al abrir la página se cargan las tablas
+    cargarTodo();
+</script>
+{% endblock %}

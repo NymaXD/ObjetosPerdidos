@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block titulo %}Inicio{% endblock %}
+
+{% block contenido %}
+<h1>¿Perdiste algo? ¿Encontraste algo?</h1>
+<p class="intro">
+    Registra el objeto y el sistema te mostrará si alguien más reportó uno
+    parecido (mismo tipo y mismo color).
+</p>
+
+<div class="opciones">
+    <a class="opcion" href="{{ url_for('registrar') }}">
+        <h2>Registrar un objeto</h2>
+        <p>Reporta un objeto que perdiste o que encontraste.</p>
+    </a>
+    <a class="opcion" href="{{ url_for('listar') }}">
+        <h2>Ver objetos y coincidencias</h2>
+        <p>Consulta el listado, busca coincidencias y marca objetos como recuperados.</p>
+    </a>
+</div>
+{% endblock %}
