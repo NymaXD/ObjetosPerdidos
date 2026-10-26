@@ -1,62 +1,60 @@
 from flask import Flask, jsonify, request
 
+# --- Creacion de la App Flask ---
 app = Flask(__name__)
 
-usuarios = {}
 
+# --- Endpoints ---
+# Cada función es una ruta con un método HTTP
 
-@app.route("/users", methods=["POST"])
-def create_user():
+# Método GET
+# Se encarga de buscar los objetos almacenados en el JSON según el estado 'perdido' o 'encontrado'
+@app.route("/items", methods=["GET"])
+def obtener_items():
+    status = request.args.get("status")
 
-    data = request.get_json()
-
-    keys = ["nombre", "email", "password"]
-
-    if not list(data.keys()) == keys:
+    if status not in ("lost", "found"):
         return jsonify({
-            "message": "Faltan datos"
+            "error": "Indica status=lost o status=found"
         }), 400
 
-    for u in usuarios.values():
-        if data["email"] == u["email"]:
-            return "Email ya se encuentra registrado", 409
-
-    id_ = len(usuarios) + 1
-    
-    usuarios[id_] = data
-
-    return jsonify({
-        "message": "Usuario creado",
-        "name": data["nombre"]
-    }), 201
+    # Consultar la base de datos según el estado.
+    return jsonify({"status": status}), 200
 
 
-@app.route("/users", methods=["GET"])
-def list_users():
-    return jsonify(usuarios), 200
+# Método POST
+# Crea un nuevo elemento y lo añade al archivo JSON
+@app.route("/items", methods=["POST"])
+def nuevo_objeto():
+    return jsonify({"message": "Endpoint funcionando"}), 200
 
 
-@app.route("/users/<int:id_>", methods=["PATCH"])
-def change_password(id_):
+# Método GET (búsqueda)
+# Busca las coincidencias de objetos perdidos y encontrados mediante filtros
+@app.route("/items/matches", methods=["GET"])
+def buscar_coincidencias():
+    tipo = request.args.get("tipo")
+    color = request.args.get("color")
 
-    data = request.get_json()
-
-    if len(data) != 1 or list(data.keys()) != ["password"]:
+    if not tipo or not color:
         return jsonify({
-            "message": "Bad request"
+            "error": "Los parámetros tipo y color son obligatorios"
         }), 400
 
-    if id_ in usuarios.keys():
-        usuarios[id_].update(data)
+    # 1. Buscar objetos perdidos del tipo y color indicados.
+    # 2. Buscar objetos encontrados con esas características.
+    # 3. Relacionar los resultados y devolver las coincidencias.
 
-        return jsonify({
-            "message": "Contraseña modificada correctamente"
-        }), 200
+    return jsonify({"message": "endpoint funcionando"}), 200
 
-    else:
-        return jsonify({
-            "message": "Usuario no existente"
-        }), 404
 
+# Método PUT
+# Actualiza el estado de un objeto de 'perdido' a 'encontrado'
+@app.route("/lost_items/<int:id_>", methods=["PUT"])
+def marcar_como_recuperado(id_):
+    return jsonify({"message": "Endpoint funcionando"}), 200
+
+
+# --- Ejecución de la App Flask ---
 if __name__ == "__main__":
     app.run(debug=True)
