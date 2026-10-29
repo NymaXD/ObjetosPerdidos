@@ -30,17 +30,6 @@ Aplicación web hecha con Flask para registrar objetos perdidos y encontrados, c
     └── api-contract.md  # Contrato de la API
 ```
 
-## Ejecución local
-
-```bash
-python -m venv venv
-source venv/bin/activate    # En Windows: venv\Scripts\activate
-pip install -r requirements.txt
-python app.py
-```
-
-La carpeta `data/` debe existir; si no, el registro de objetos responde con error 500.
-
 ## Ejecución con Docker
 
 Primero debe clonar el repositorio:
