@@ -38,6 +38,10 @@ Primero debe clonar el repositorio:
 git clone https://github.com/NymaXD/ObjetosPerdidos
 ```
 
+Luego acceder al directorio:
+```bash
+cd ObjetosPerdidos
+```
 
 Construir la imagen:
 
